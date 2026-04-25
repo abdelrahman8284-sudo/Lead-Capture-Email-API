@@ -26,7 +26,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/lead")
+@RequestMapping("/api/v1/leads")
 @Validated
 @RequiredArgsConstructor
 public class LeadController {

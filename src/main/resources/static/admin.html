@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | Lead Capture Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; }
+        .table-container { border-radius: 1rem; overflow: hidden; background: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-500 p-2 rounded-lg">
+                    <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">إدارة المسجلين</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-slate-400 text-sm hidden md:block">المسؤول: عبد الرحمن</span>
+                <button onclick="loadData(0)" class="p-2 hover:bg-slate-800 rounded-full transition-all">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6">
+        
+        <div class="mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 flex items-center justify-between shadow-sm max-w-xs">
+                <div>
+                    <p class="text-slate-500 text-sm font-medium">إجمالي المسجلين</p>
+                    <h3 id="totalCount" class="text-3xl font-bold text-slate-800">0</h3>
+                </div>
+                <div class="bg-indigo-100 p-4 rounded-2xl text-indigo-600">
+                    <i data-lucide="users" class="w-8 h-8"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative mb-6 max-w-md">
+            <i data-lucide="search" class="absolute right-4 top-3.5 w-5 h-5 text-slate-400"></i>
+            <input type="text" id="searchInput" placeholder="بحث ذكي بالاسم..." 
+                class="w-full pr-12 pl-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all shadow-sm">
+        </div>
+
+        <div class="table-container border border-slate-200">
+            <table class="w-full text-right">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                        <th class="px-6 py-4 font-semibold text-sm">الاسم</th>
+                        <th class="px-6 py-4 font-semibold text-sm">التواصل</th>
+                        <th class="px-6 py-4 font-semibold text-sm text-center">تاريخ التسجيل</th>
+                        <th class="px-6 py-4 font-semibold text-sm text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-100">
+                    </tbody>
+            </table>
+            
+            <div id="loader" class="hidden p-20 text-center text-slate-400">
+                <i data-lucide="loader-2" class="w-10 h-10 animate-spin mx-auto mb-4 text-indigo-500"></i>
+                <p>جاري تحميل البيانات...</p>
+            </div>
+            <div id="noData" class="hidden p-20 text-center text-slate-400">
+                <i data-lucide="database" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+                <p>لا توجد بيانات مطابقة للبحث</p>
+            </div>
+        </div>
+
+        <div class="mt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p id="pageInfo" class="text-sm text-slate-500 font-medium">عرض الصفحة 1 من 1</p>
+            <div class="flex items-center gap-2">
+                <button id="prevBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-slate-700">
+                    السابق
+                </button>
+                <div id="pageNumbers" class="flex gap-1">
+                    </div>
+                <button id="nextBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-slate-700">
+                    التالي
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        
+        let currentPage = 0;
+        let totalPages = 0;
+        let debounceTimer;
+
+        // دالة جلب البيانات مع دعم الـ Pagination
+        async function loadData(page = 0) {
+            showState('loader');
+            try {
+                const response = await fetch(`/api/v1/lead?pageNumber=${page}&pageSize=5&sortBy=createdAt&sortType=DESC`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    renderTable(result.data.content); // "content" لأن الـ Page object من Spring بيرجع الداتا هنا
+                    updatePagination(result.data);
+                    document.getElementById('totalCount').innerText = result.data.totalElements;
+                    currentPage = page;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // دالة البحث الذكي (Server-side Search)
+        async function searchData(name) {
+            if (!name) return loadData(0);
+            
+            showState('loader');
+            try {
+                const response = await fetch(`/api/v1/lead/search-name?name=${encodeURIComponent(name)}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    renderTable(result.data);
+                    document.getElementById('pageInfo').innerText = "نتائج البحث";
+                    document.getElementById('pageNumbers').innerHTML = "";
+                    document.getElementById('prevBtn').disabled = true;
+                    document.getElementById('nextBtn').disabled = true;
+                }
+            } catch (err) {
+                renderTable([]);
+            }
+        }
+
+        function renderTable(leads) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+            
+            if (!leads || leads.length === 0) {
+                showState('noData');
+                return;
+            }
+
+            showState('table');
+            leads.forEach(lead => {
+                const date = new Date(lead.createdAt).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' });
+                const row = `
+                    <tr class="hover:bg-indigo-50/30 transition-colors group">
+                        <td class="px-6 py-5">
+                            <div class="font-bold text-slate-800">${lead.name}</div>
+                            <div class="text-xs text-slate-400 font-medium tracking-tight">${lead.address}</div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="flex flex-col text-sm">
+                                <span class="text-slate-600 font-medium">${lead.email}</span>
+                                <span class="text-indigo-500 font-mono text-xs">${lead.phone}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-center text-sm text-slate-500 font-medium">${date}</td>
+                        <td class="px-6 py-5 text-center">
+                            <button onclick="openWA('${lead.phone}', '${lead.name}')" 
+                                class="p-2.5 bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all shadow-sm" title="مراسلة واتساب">
+                                <i data-lucide="message-circle" class="w-5 h-5"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            lucide.createIcons();
+        }
+
+        function updatePagination(pageData) {
+            totalPages = pageData.totalPages;
+            document.getElementById('pageInfo').innerText = `عرض الصفحة ${pageData.number + 1} من ${totalPages}`;
+            
+            document.getElementById('prevBtn').disabled = pageData.first;
+            document.getElementById('nextBtn').disabled = pageData.last;
+            
+            document.getElementById('prevBtn').onclick = () => loadData(currentPage - 1);
+            document.getElementById('nextBtn').onclick = () => loadData(currentPage + 1);
+        }
+
+        function showState(state) {
+            const elements = {
+                loader: document.getElementById('loader'),
+                noData: document.getElementById('noData'),
+                table: document.getElementById('tableBody')
+            };
+            Object.keys(elements).forEach(key => elements[key].classList.add('hidden'));
+            if (state === 'table') elements.table.classList.remove('hidden');
+            else elements[state].classList.remove('hidden');
+        }
+
+        // البحث مع Debouncing
+        document.getElementById('searchInput').oninput = (e) => {
+            clearTimeout(debounceTimer);
+            const term = e.target.value.trim();
+            debounceTimer = setTimeout(() => searchData(term), 500);
+        };
+
+        function openWA(phone, name) {
+            // 1. تنظيف الرقم من أي مسافات أو أقواس
+            let cleanPhone = phone.replace(/[^0-9]/g, '');
+
+            // 2. لو الرقم يبدأ بـ 0 (زي أرقام مصر)، هنضيف كود الدولة 20 في الأول
+            if (cleanPhone.startsWith('0')) {
+                cleanPhone = '20' + cleanPhone.substring(1);
+            } 
+            // لو الرقم مش بيبدأ بـ 0 ولا بيبدأ بـ 20، ضيف الكود الدولي المناسب لبلدك
+            else if (!cleanPhone.startsWith('20')) {
+                cleanPhone = '20' + cleanPhone; 
+            }
+
+            const msg = encodeURIComponent(`أهلاً يا ${name}، بكلمك بخصوص تسجيلك في الموقع بتاعنا...`);
+            
+            // الرابط الصحيح لفتح المحادثة مباشرة
+            window.open(`https://api.whatsapp.com/send?phone=${cleanPhone}&text=${msg}`, '_blank');
+        }
+
+        // تشغيل أولي
+        window.onload = () => loadData(0);
+    </script>
+</body>
+</html>
