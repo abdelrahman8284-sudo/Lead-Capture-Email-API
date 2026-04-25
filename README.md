@@ -1,53 +1,14 @@
 # 🚀 Lead Capture Email Automation API
 
-A backend system built with Spring Boot to capture user leads from a landing page and automatically send confirmation emails.
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-brightgreen)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
+
+A backend system built with **Spring Boot** to capture leads, store them in a database, and send automated emails.
 
 ---
 
-## 📌 Overview
-
-This project simulates a real-world **Lead Generation System** used in landing pages.
-
-Users can submit their data (name, email, phone, address), which is:
-- Stored in the database
-- Validated to prevent duplicates
-- Followed by an automatic confirmation email
-
-It is designed to mimic how businesses collect and manage potential customers from ads or landing pages.
-
----
-
-## ✨ Features
-
-- 📥 Capture user leads (name, email, phone, address)
-- 🚫 Prevent duplicate registrations (email & phone)
-- 📧 Send confirmation email after registration
-- 🔍 Search leads by:
-  - Email
-  - Name
-  - Address
-  - Name + Email
-- 📄 Pagination & sorting support
-- ⚠️ Global exception handling
-- ✅ Request validation (including custom phone validator)
-- 🔄 DTO & Entity separation using MapStruct
-- 📚 API documentation with Swagger
-
----
-
-## 🛠️ Tech Stack
-
-- Java 21
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- MapStruct
-- Lombok
-- Spring Mail (JavaMailSender)
-- Spring Validation
-- Springdoc OpenAPI (Swagger)
-
----
 ## 📂 API Endpoints
 
 ### ➕ Create Lead
@@ -86,6 +47,8 @@ spring.mail.username=${MY_GMAIL}
 spring.mail.password=${MY_GMAIL_PASSWORD}
 ```
 
+---
+
 ### 🗄️ Database Configuration (PostgreSQL)
 
 ```properties
@@ -120,6 +83,8 @@ mvn spring-boot:run
 
 Or run the main class from your IDE.
 
+---
+
 ### 4. Access Swagger UI
 ```
 http://localhost:8080/swagger-ui.html
@@ -127,14 +92,22 @@ http://localhost:8080/swagger-ui.html
 
 ---
 
-## 📊 Use Case
-
-This system can be used in:
+## 📊 Use Cases
 
 - Marketing landing pages  
 - Product subscriptions  
 - Lead generation campaigns  
 - Email list building systems  
+
+---
+
+## 🛠️ Tech Stack
+
+- Java 17  
+- Spring Boot  
+- Spring Data JPA  
+- PostgreSQL  
+- Java Mail Sender  
 
 ---
 
