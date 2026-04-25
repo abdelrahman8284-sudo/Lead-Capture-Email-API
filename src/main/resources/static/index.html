@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سجل الآن | Lead Capture</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-10 bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+            
+            <div class="bg-indigo-600 p-12 text-white flex flex-col justify-center">
+                <div class="mb-6 bg-indigo-500 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i data-lucide="rocket" class="w-8 h-8"></i>
+                </div>
+                <h1 class="text-4xl font-bold mb-4 leading-tight">ابدأ رحلتك معنا اليوم</h1>
+                <p class="text-indigo-100 text-lg">سجل بياناتك الآن وسنقوم بإرسال رسالة تأكيد فورية إلى بريدك الإلكتروني.</p>
+                
+                <div class="mt-10 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="check-circle-2" class="text-indigo-300 w-5 h-5"></i>
+                        <span>تأكيد حجز فوري</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="check-circle-2" class="text-indigo-300 w-5 h-5"></i>
+                        <span>دعم فني متاح 24/7</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-12 flex flex-col justify-center">
+                
+                <div id="formContainer">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-8">نموذج التسجيل</h2>
+                    <form id="leadForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">الاسم الكامل</label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="أحمد محمد">
+                            <p id="name-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">البريد الإلكتروني</label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-left" placeholder="example@mail.com">
+                            <p id="email-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">رقم الموبايل</label>
+                            <input type="text" name="phone" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-left" placeholder="01xxxxxxxxx">
+                            <p id="phone-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">العنوان</label>
+                            <input type="text" name="address" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="القاهرة، مصر">
+                            <p id="address-error" class="text-red-500 text-xs mt-1 hidden"></p>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-indigo-200 mt-4 flex justify-center items-center gap-2">
+                            <span>سجل الآن</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="successContainer" class="hidden fade-in text-center">
+                    <div class="mb-6 bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                        <i data-lucide="check-circle" class="w-10 h-10 text-green-600 animate-pulse"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">تم التسجيل بنجاح!</h2>
+                    <p class="text-slate-500 mb-8 text-sm">شكراً لتسجيلك، تم إرسال رسالة تأكيد إلى بريدك الإلكتروني.</p>
+                    
+                    <button onclick="resetForm()" class="group flex items-center justify-center gap-2 mx-auto bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold transition-all">
+                        <i data-lucide="plus-circle" class="w-5 h-5 group-hover:rotate-90 transition-transform"></i>
+                        <span>تسجيل شخص آخر</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const form = document.getElementById('leadForm');
+        const btn = document.getElementById('submitBtn');
+        const formContainer = document.getElementById('formContainer');
+        const successContainer = document.getElementById('successContainer');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin w-5 h-5"></i> جاري الحفظ...';
+            lucide.createIcons();
+
+            document.querySelectorAll('[id$="-error"]').forEach(el => el.classList.add('hidden'));
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/v1/lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    formContainer.classList.add('hidden');
+                    successContainer.classList.remove('hidden');
+                    lucide.createIcons();
+                } else {
+                    if (result.details && Array.isArray(result.details)) {
+                        result.details.forEach(error => {
+                            const errLower = error.toLowerCase();
+                            if (errLower.includes('name')) showErr('name-error', error);
+                            else if (errLower.includes('email')) showErr('email-error', error);
+                            else if (errLower.includes('phone')) showErr('phone-error', error);
+                            else if (errLower.includes('address')) showErr('address-error', error);
+                        });
+                    } else {
+                        alert(result.message);
+                    }
+                }
+            } catch (err) {
+                alert("تعذر الاتصال بالسيرفر!");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'سجل الآن';
+            }
+        };
+
+        function showErr(id, msg) {
+            const el = document.getElementById(id);
+            el.innerText = msg;
+            el.classList.remove('hidden');
+        }
+
+        function resetForm() {
+            successContainer.classList.add('hidden');
+            formContainer.classList.remove('hidden');
+            form.reset();
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
